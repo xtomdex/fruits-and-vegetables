@@ -10,14 +10,14 @@ final readonly class Quantity
         private int $value
     ) {}
 
-    public static function fromGrams(int $grams): self
+    public static function create(int|float $value, ?Unit $unit = null): self
     {
-        return new self($grams);
-    }
+        $calculatedValue = (int) match ($unit) {
+            Unit::KILOGRAMS => $value * 1000,
+            default => $value
+        };
 
-    public static function fromKilograms(float $kilograms): self
-    {
-        return new self((int) $kilograms * 1000);
+        return new self($calculatedValue);
     }
 
     public function asGrams(): int
@@ -25,8 +25,11 @@ final readonly class Quantity
         return $this->value;
     }
 
-    public function asKilograms(): float
+    public function asValueInUnit(Unit $unit): float
     {
-        return (float) $this->value / 1000;
+        return (float) match ($unit) {
+            Unit::KILOGRAMS => $this->value / 1000,
+            default => $this->value
+        };
     }
 }
