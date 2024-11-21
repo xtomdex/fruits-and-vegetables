@@ -9,15 +9,16 @@ use App\Domain\ValueObject\Quantity;
 
 class Product
 {
-    private ?int $id = null;
+    private ?int $id;
     private string $type;
     private int $quantity;
 
     public function __construct(
-        private string $name,
+        private readonly string $name,
         ProductType $type,
         Quantity $quantity
     ) {
+        $this->id = null;
         $this->type = $type->value;
         $this->quantity = $quantity->asGrams();
     }
@@ -39,6 +40,6 @@ class Product
 
     public function getQuantity(): Quantity
     {
-        return Quantity::fromGrams($this->quantity);
+        return Quantity::create($this->quantity);
     }
 }

@@ -16,7 +16,7 @@ final class Version20241120174737 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->addSql('CREATE TABLE products (id INTEGER NOT NULL, name VARCHAR(255) NOT NULL, type VARCHAR(55) NOT NULL, quantity INTEGER NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE products (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name VARCHAR(255) NOT NULL, type VARCHAR(55) NOT NULL, quantity INTEGER NOT NULL)');
     }
 
     public function down(Schema $schema): void
