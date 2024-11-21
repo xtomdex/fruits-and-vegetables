@@ -1,59 +1,148 @@
 # 🍎🥕 Fruits and Vegetables
 
-## 🎯 Goal
-We want to build a service which will take a `request.json` and:
-* Process the file and create two separate collections for `Fruits` and `Vegetables`
-* Each collection has methods like `add()`, `remove()`, `list()`;
-* Units have to be stored as grams;
-* Store the collections in a storage engine of your choice. (e.g. Database, In-memory)
-* Provide an API endpoint to query the collections. As a bonus, this endpoint can accept filters to be applied to the returning collection.
-* Provide another API endpoint to add new items to the collections (i.e., your storage engine).
-* As a bonus you might:
-  * consider giving option to decide which units are returned (kilograms/grams);
-  * how to implement `search()` method collections;
-  * use latest version of Symfony's to embbed your logic 
+This project is designed to manage products (fruits and vegetables) while following **Domain-Driven Design (DDD)** principles and clean code practices. The application provides functionality to list and create products via a RESTful API.
 
-### ✔️ How can I check if my code is working?
-You have two ways of moving on:
-* You call the Service from PHPUnit test like it's done in dummy test (just run `bin/phpunit` from the console)
+---
 
-or
+## **1. Project Structure**
 
-* You create a Controller which will be calling the service with a json payload
+The project is organized into **core layers**, adhering to the principles of Domain-Driven Design (DDD):
 
-## 💡 Hints before you start working on it
-* Keep KISS, DRY, YAGNI, SOLID principles in mind
-* Timebox your work - we expect that you would spend between 3 and 4 hours.
-* Your code should be tested
+```
+src/ 
+├── Domain/ # Core business logic and domain concepts
+├── Application/ # Use cases
+├── Infrastructure/ # Framework- and system-specific implementations
+├── UI/ # Controllers
+```
+Tests are located in the `/tests` directory in the project root.
 
-## When you are finished
-* Please upload your code to a public git repository (i.e. GitHub, Gitlab)
+If this project had more complex and contained multiple domain areas, I would have used a **modular structure**, where each module encapsulates its own **Domain**, **Application**, **Infrastructure**, **Tests**, and **UI** layers. However, since this project contains only a single domain entity (`Product`), I opted for a flat structure to keep it simple and focused.
 
-## 🐳 Docker image
-Optional. Just here if you want to run it isolated.
+---
 
-### 📥 Pulling image
+## **2. Installation and Usage**
+
+### **Installation**
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/xtomdex/fruits-and-vegetables.git
+   cd fruits-and-vegetables
+   ```
+
+2. Install dependencies:
+   ```bash
+   composer install
+   ```
+
+3. Run migrations:
+   ```bash
+   php bin/console doctrine:migrations:migrate
+   ```
+
+4. Load fixtures:
+   ```bash
+   php bin/console doctrine:fixtures:load
+   ```
+
+5. Run tests:
+   ```bash
+   php bin/phpunit
+   ```
+
+6. Start the Symfony development server:
+   ```bash
+   symfony server:start
+   ```
+
+## **3. Endpoints**
+The application exposes two main endpoints:
+
+### **1. Product List**
+
+**GET `/products`**
+
+#### Query Parameters:
+- `type`: (optional) Filter by product type (`fruit` or `vegetable`).
+- `unit`: (optional) Return quantities in `kg` or `g` (default is `g`).
+- `name`: (optional) Filter by product name (partial matches allowed).
+
+#### Example Request:
 ```bash
-docker pull tturkowski/fruits-and-vegetables
+curl -X GET 'http://127.0.0.1:8000/products?type=fruit&unit=kg'
 ```
 
-### 🧱 Building image
-```bash
-docker build -t tturkowski/fruits-and-vegetables -f docker/Dockerfile .
+#### Example Response:
+```json
+[
+   {
+      "id": 1,
+      "name": "Apple",
+      "type": "fruit",
+      "quantity": 1000,
+      "unit": "g"
+   },
+   {
+      "id": 2,
+      "name": "Banana",
+      "type": "fruit",
+      "quantity": 1,
+      "unit": "kg"
+   }
+]
 ```
+### **2. Create Product**
 
-### 🏃‍♂️ Running container
-```bash
-docker run -it -w/app -v$(pwd):/app tturkowski/fruits-and-vegetables sh 
-```
+**POST `/products`**
 
-### 🛂 Running tests
-```bash
-docker run -it -w/app -v$(pwd):/app tturkowski/fruits-and-vegetables bin/phpunit
-```
+#### Body Parameters:
+- `name`: (string, required).
+- `type`: (string, required, `fruit` or `vegetable`).
+- `quantity`: (float, required).
+- `unit`: (string, optional, `kg` or `g`, default is `g` if not provided).
 
-### ⌨️ Run development server
+#### Example Request:
 ```bash
-docker run -it -w/app -v$(pwd):/app -p8080:8080 tturkowski/fruits-and-vegetables php -S 0.0.0.0:8080 -t /app/public
-# Open http://127.0.0.1:8080 in your browser
+curl -X POST 'http://127.0.0.1:8000/products' \
+-H 'Content-Type: application/json' \
+-d '{
+    "name": "Carrot",
+    "type": "vegetable",
+    "quantity": 0.8,
+    "unit": "kg"
+}'
 ```
+#### Example Response (201 Created):
+```json
+{
+   "id": 1,
+   "name": "Apple",
+   "type": "fruit",
+   "quantity": 1000,
+   "unit": "g"
+}
+```
+#### Validation Error Response (400 Bad Request):
+```json
+{
+   "message": "Invalid quantity"
+}
+```
+## **4. Summary**
+
+In this project, I adhered to **DDD principles** and clean code practices to ensure maintainability and extensibility.
+
+### **Unified Product Collection**
+
+The task specified creating separate collections for `Fruits` and `Vegetables`. However, I chose to implement a **single `ProductCollection`**, which I believe is a better solution for the following reasons:
+
+- **Simpler Design**: Storing all products in a single table and using a `type` field to differentiate them avoids unnecessary complexity.
+- **Scalability**: This approach easily supports adding new product types (e.g., `grains`, `herbs`) without requiring changes to the database schema or significant code modifications.
+- **Maintainability**: Filtering products dynamically by type ensures a cleaner and more DRY (Don’t Repeat Yourself) codebase compared to maintaining separate collections and logic for each product type.
+
+While the requested task could have been implemented as specified, I believe the solution I implemented provides a more robust, future-proof, and elegant approach that aligns with modern software development principles.
+
+---
+
+Feel free to explore the codebase and test the API! Let me know if you have any questions or suggestions.
